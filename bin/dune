@@ -1,0 +1,4 @@
+(executable
+ (public_name opam-build)
+ (name main)
+ (libraries opam-client))
