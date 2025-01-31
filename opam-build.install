@@ -6,3 +6,6 @@ lib: [
 bin: [
   "_build/install/default/bin/opam-build"
 ]
+doc: [
+  "_build/install/default/doc/opam-build/README.md"
+]
