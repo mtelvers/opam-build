@@ -1,10 +1,12 @@
 open Cmdliner
 
-let build name =
+let build verbose_level debug_level name =
   OpamSystem.init ();
   let yes = Some (Some true) in
   let confirm_level = Some `unsafe_yes in
-  OpamCoreConfig.init ?yes ?confirm_level ();
+  let verbose_level = if List.is_empty verbose_level then None else Some (List.length verbose_level) in
+  let debug_level = if List.is_empty debug_level then None else Some (List.length debug_level) in
+  OpamCoreConfig.init ?yes ?confirm_level ?verbose_level ?debug_level ();
   OpamFormatConfig.init ();
   OpamClientConfig.init ();
   (*
@@ -53,9 +55,13 @@ let build name =
 
 let package_name = Arg.(value & pos 0 string "" & info ~docv:"PACKAGE-NAME" ~doc:"The name and version of the package in the format pkg.x.y.z." [])
 
+let verbose_level = Arg.(value & flag_all & info [ "v"; "verbose" ] ~docv:"VERBOSELEVEL" ~doc:"Increase the log level. Use several times to increase, e.g. '-vv'")
+
+let debug_level = Arg.(value & flag_all & info [ "d"; "debug" ] ~docv:"DEBUGLEVEL" ~doc:"Increase the debug level. Use several times to increase, e.g. '-dd'")
+
 let cmd =
   let doc = "Installs an opam package in the default switch. No checks, no questions asked." in
   let info = Cmd.info "opam-build" ~version:"%%VERSION%%" ~doc in
-  Cmd.v info Term.(const build $ package_name)
+  Cmd.v info Term.(const build $ verbose_level $ debug_level $ package_name)
 
 let () = exit (Cmd.eval' cmd)
