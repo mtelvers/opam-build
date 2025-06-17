@@ -1,4 +1,5 @@
 (executable
  (public_name opam-build)
  (name main)
+ (flags (:standard -ccopt -static -ccopt -march=x86-64))
  (libraries opam-client))
