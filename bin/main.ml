@@ -29,6 +29,8 @@ let build verbose_level debug_level name =
       in
       let pkg = OpamPackage.of_string name in
       let src = source_dir pkg in
+      let build_dir = OpamPath.Switch.build_dir st.switch_global.root st.switch in
+      let build_dir = OpamFilename.SubPath.(build_dir / of_string name) in
       ignore (OpamSolution.install_depexts ~confirm:false st (OpamPackage.Set.singleton pkg));
       OpamAction.download_package st pkg |> OpamProcess.Job.run |> function
       | Some (_, e) ->
@@ -40,12 +42,13 @@ let build verbose_level debug_level name =
               Printf.printf "prepare failed... %s\n" (OpamStd.Exn.pretty_backtrace exn);
               1
           | None -> (
-              OpamAction.build_package st src pkg |> OpamProcess.Job.run |> function
+              OpamFilename.copy_dir ~src ~dst:build_dir;
+              OpamAction.build_package st build_dir pkg |> OpamProcess.Job.run |> function
               | Some exn ->
                   Printf.printf "build failed... %s\n" (OpamStd.Exn.pretty_backtrace exn);
                   1
               | None -> (
-                  OpamAction.install_package st ~build_dir:src pkg |> OpamProcess.Job.run |> function
+                  OpamAction.install_package st ~build_dir pkg |> OpamProcess.Job.run |> function
                   | Right exn ->
                       Printf.printf "install failed... %s\n" (OpamStd.Exn.pretty_backtrace exn);
                       1
