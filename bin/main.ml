@@ -52,8 +52,11 @@ let build verbose_level debug_level name =
                   | Right exn ->
                       Printf.printf "install failed... %s\n" (OpamStd.Exn.pretty_backtrace exn);
                       1
-                  | Left _ ->
-                      ignore (OpamSwitchAction.add_to_installed st pkg);
+                  | Left conf ->
+                      let conf_files =
+                        let add_conf conf = OpamPackage.Name.Map.add pkg.name conf st.conf_files in
+                        OpamStd.Option.map_default add_conf st.conf_files conf in
+                      ignore (OpamSwitchAction.add_to_installed { st with conf_files } pkg);
                       0))))
 
 let package_name = Arg.(value & pos 0 string "" & info ~docv:"PACKAGE-NAME" ~doc:"The name and version of the package in the format pkg.x.y.z." [])
