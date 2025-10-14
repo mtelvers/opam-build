@@ -1,8 +1,29 @@
 (executable
  (public_name opam-build)
  (name main)
- (enabled_if (and (= %{os_type} Unix) (<> %{system} freebsd)))
+ (enabled_if (and (= %{os_type} Unix) (<> %{system} freebsd) (= %{architecture} amd64)))
  (flags (:standard -ccopt -static -ccopt -march=x86-64))
+ (libraries opam-client))
+
+(executable
+ (public_name opam-build)
+ (name main)
+ (enabled_if (and (= %{os_type} Unix) (<> %{system} freebsd) (= %{architecture} arm64)))
+ (flags (:standard -ccopt -static))
+ (libraries opam-client))
+
+(executable
+ (public_name opam-build)
+ (name main)
+ (enabled_if (and (= %{os_type} Unix) (<> %{system} freebsd) (= %{architecture} power)))
+ (flags (:standard -ccopt -static))
+ (libraries opam-client))
+
+(executable
+ (public_name opam-build)
+ (name main)
+ (enabled_if (and (= %{os_type} Unix) (<> %{system} freebsd) (= %{architecture} riscv)))
+ (flags (:standard -ccopt -static))
  (libraries opam-client))
 
 (executable
