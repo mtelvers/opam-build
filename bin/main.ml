@@ -1,6 +1,6 @@
 open Cmdliner
 
-let build verbose_level debug_level name =
+let build verbose_level debug_level name test doc dev_setup =
   OpamSystem.init ();
   let yes = Some (Some true) in
   let confirm_level = Some `unsafe_yes in
@@ -43,12 +43,12 @@ let build verbose_level debug_level name =
               1
           | None -> (
               OpamFilename.copy_dir ~src ~dst:build_dir;
-              OpamAction.build_package st build_dir pkg |> OpamProcess.Job.run |> function
+              OpamAction.build_package st ~test ~doc ~dev_setup build_dir pkg |> OpamProcess.Job.run |> function
               | Some exn ->
                   Printf.printf "build failed... %s\n" (OpamStd.Exn.pretty_backtrace exn);
                   1
               | None -> (
-                  OpamAction.install_package st ~build_dir pkg |> OpamProcess.Job.run |> function
+                  OpamAction.install_package st ~test ~doc ~dev_setup ~build_dir pkg |> OpamProcess.Job.run |> function
                   | Right exn ->
                       Printf.printf "install failed... %s\n" (OpamStd.Exn.pretty_backtrace exn);
                       1
@@ -65,9 +65,15 @@ let verbose_level = Arg.(value & flag_all & info [ "v"; "verbose" ] ~docv:"VERBO
 
 let debug_level = Arg.(value & flag_all & info [ "d"; "debug" ] ~docv:"DEBUGLEVEL" ~doc:"Increase the debug level. Use several times to increase, e.g. '-dd'")
 
+let with_test = Arg.(value & flag & info [ "t"; "with-test" ] ~docv:"WITH-TEST" ~doc:"Build and run package tests")
+
+let with_doc = Arg.(value & flag & info [ "with-doc" ] ~docv:"WITH-DOC" ~doc:"Build package documentation")
+
+let with_dev_setup = Arg.(value & flag & info [ "with-dev-setup" ] ~docv:"WITH-DEV-SETUP" ~doc:"Run package dev setup")
+
 let cmd =
   let doc = "Installs an opam package in the default switch. No checks, no questions asked." in
   let info = Cmd.info "opam-build" ~version:"%%VERSION%%" ~doc in
-  Cmd.v info Term.(const build $ verbose_level $ debug_level $ package_name)
+  Cmd.v info Term.(const build $ verbose_level $ debug_level $ package_name $ with_test $ with_doc $ with_dev_setup)
 
 let () = exit (Cmd.eval' cmd)
