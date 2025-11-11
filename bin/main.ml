@@ -31,7 +31,7 @@ let build verbose_level debug_level name test doc dev_setup =
       let src = source_dir pkg in
       let build_dir = OpamPath.Switch.build_dir st.switch_global.root st.switch in
       let build_dir = OpamFilename.SubPath.(build_dir / of_string name) in
-      ignore (OpamSolution.install_depexts ~confirm:false st (OpamPackage.Set.singleton pkg));
+      ignore (OpamSolution.install_depexts ~confirm:false ~pkg_to_install:(OpamPackage.Set.singleton pkg) ~pkg_installed:st.installed st);
       OpamAction.download_package st pkg |> OpamProcess.Job.run |> function
       | Some (_, e) ->
           Printf.printf "download failed... %s\n" e;
