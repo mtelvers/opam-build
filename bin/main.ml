@@ -33,7 +33,17 @@ let build verbose_level debug_level name test doc dev_setup =
       let build_dir = OpamFilename.SubPath.(build_dir / of_string name) in
       match OpamSwitchState.depexts_unavailable st pkg with
       | Some missing ->
-          OpamSolution.print_depext_msg { OpamSysPkg.status_empty with s_not_found = missing };
+          let names = List.rev_map OpamSysPkg.to_string (OpamSysPkg.Set.elements missing) in
+          let pkgs = match names with
+            | [p] -> " '" ^ p ^ "'"
+            | ps -> "s " ^ OpamStd.Format.pretty_list (List.rev_map (Printf.sprintf "'%s'") ps)
+          in
+          OpamConsole.error
+            "Package %s depends on the unavailable system package%s. You can use \
+             `--no-depexts' to attempt installation anyway.%s"
+            name pkgs
+            (OpamStd.Option.map_default (Printf.sprintf "\n%s.") ""
+               (OpamSysInteract.repo_enablers ~env:st.switch_global.global_variables st.switch_global.config));
           1
       | None ->
       ignore (OpamSolution.install_depexts ~confirm:false ~pkg_to_install:(OpamPackage.Set.singleton pkg) ~pkg_installed:st.installed st);
